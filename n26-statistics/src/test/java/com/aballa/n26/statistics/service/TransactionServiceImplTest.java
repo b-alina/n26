@@ -4,8 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.stream.IntStream;
 
@@ -106,7 +105,7 @@ public class TransactionServiceImplTest {
 
 		Assert.assertTrue(statistics.getCount() == 0);
 	}
-	
+
 	@Test
 	public void testTransactionCountInStatistic() throws InterruptedException {
 
@@ -121,7 +120,7 @@ public class TransactionServiceImplTest {
 		Statistics statistics = (Statistics) cacheManager.getCache(STATISTICS_CACHE_NAME).get(STATISTIC_CACHE_KEY)
 				.get();
 
-		Assert.assertTrue(statistics.getCount() == 30);
+		Assert.assertTrue(statistics.getCount() == 31);
 
 		Thread.sleep(5000);
 
@@ -135,11 +134,10 @@ public class TransactionServiceImplTest {
 
 		statistics = (Statistics) cacheManager.getCache(STATISTICS_CACHE_NAME).get(STATISTIC_CACHE_KEY).get();
 
-		Assert.assertTrue(statistics.getCount() == 35);
+		Assert.assertTrue(statistics.getCount() == 36);
 	}
 
 	private long extractTimeFromCurrentUTC(long time) {
-		OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
-		return utc.minusSeconds(time).toInstant().toEpochMilli();
+		return Instant.now().minusSeconds(time).toEpochMilli();
 	}
 }

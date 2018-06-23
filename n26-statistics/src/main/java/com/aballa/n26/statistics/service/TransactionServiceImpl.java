@@ -1,7 +1,6 @@
 package com.aballa.n26.statistics.service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.DoubleSummaryStatistics;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -18,7 +17,6 @@ public class TransactionServiceImpl implements TransactionService {
 
 	private static final String STATISTIC_CACHE_KEY = "uniqueStatistic";
 	private static final String STATISTICS_CACHE_NAME = "statistics";
-	private static final OffsetDateTime UTC = OffsetDateTime.now(ZoneOffset.UTC);
 
 	private ConcurrentSkipListMap<Long, Double> transactions = new ConcurrentSkipListMap<>();
 	private DoubleSummaryStatistics summaryStatistics = new DoubleSummaryStatistics();
@@ -66,12 +64,12 @@ public class TransactionServiceImpl implements TransactionService {
 
 		cacheManager.getCache(STATISTICS_CACHE_NAME).put(STATISTIC_CACHE_KEY, statistics);
 
-		transactions.headMap(UTC.toInstant().minusSeconds(60).toEpochMilli()).clear();
+		transactions.headMap(Instant.now().minusSeconds(60).toEpochMilli()).clear();
 	}
 
 	@Override
 	public ConcurrentNavigableMap<Long, Double> getTransactionsFromLastMinute() {
-		return transactions.tailMap(UTC.toInstant().minusSeconds(60).toEpochMilli(), true);
+		return transactions.tailMap(Instant.now().minusSeconds(60).toEpochMilli(), true);
 	}
 
 	/**
@@ -83,9 +81,10 @@ public class TransactionServiceImpl implements TransactionService {
 	 */
 	private boolean timestampInLast60Sec(final long timestamp) {
 
-		long currentUtcTimestamp = UTC.toInstant().toEpochMilli();
-		long aMinuteAgo = currentUtcTimestamp - 60000;
+		// always in UTC if not timezone set
+		long currentUtcTimestamp = Instant.now().toEpochMilli();
+		long currentMinus60Sec = Instant.now().minusSeconds(60).toEpochMilli();
 
-		return timestamp <= currentUtcTimestamp && timestamp > aMinuteAgo;
+		return timestamp <= currentUtcTimestamp && timestamp > currentMinus60Sec;
 	}
 }
